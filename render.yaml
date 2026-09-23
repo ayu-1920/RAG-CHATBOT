@@ -1,12 +1,14 @@
 services:
   # -------------------------------------
-  # 1. FastAPI Backend (Docker Service)
+  # 1. FastAPI Backend (Python Service)
   # -------------------------------------
   - type: web
     name: rag-backend
-    env: docker
+    env: python
     rootDir: backend
     plan: free # Change to starter/standard for production compute
+    buildCommand: pip install -r requirements.txt
+    startCommand: uvicorn app.main:app --host 0.0.0.0 --port $PORT
     healthCheckPath: /
     envVars:
       - key: OPENAI_API_KEY
