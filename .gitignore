@@ -1,0 +1,22 @@
+# Environments
+venv/
+.venv/
+env/
+.env
+
+# Vector Database
+chroma_data/
+
+# Python caches
+__pycache__/
+*.pyc
+
+# Node
+node_modules/
+dist/
+.DS_Store
+
+# Windows / IDEs
+.vscode/
+.idea/
+*.suo

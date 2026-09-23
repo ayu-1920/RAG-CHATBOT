@@ -1,0 +1,34 @@
+services:
+  # -------------------------------------
+  # 1. FastAPI Backend (Docker Service)
+  # -------------------------------------
+  - type: web
+    name: rag-backend
+    env: docker
+    rootDir: backend
+    plan: free # Change to starter/standard for production compute
+    healthCheckPath: /
+    envVars:
+      - key: OPENAI_API_KEY
+        sync: false # Requires you to enter this securely in Render dashboard
+      - key: CHUNK_SIZE
+        value: 512
+      - key: CHUNK_OVERLAP
+        value: 64
+
+  # -------------------------------------
+  # 2. React Frontend (Static Site via CDN)
+  # -------------------------------------
+  - type: web
+    name: rag-frontend
+    env: static
+    rootDir: frontend
+    buildCommand: npm install && npm run build
+    staticPublishPath: ./dist
+    envVars:
+      # This dynamically maps the backend's live URL into the frontend build!
+      - key: VITE_API_URL
+        fromService:
+          type: web
+          name: rag-backend
+          property: host
