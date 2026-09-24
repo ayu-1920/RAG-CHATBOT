@@ -40,15 +40,9 @@ async def process_and_store_pdf(file: UploadFile, document_id: str):
         )
         splits = text_splitter.split_documents(docs)
 
-        # 4. Store in Vector DB (hybrid store handles both dense and sparse)
+        # 4. Store in Vector DB
         vector_store = get_vector_store()
-        # Add metadata IDs for hybrid search compatibility
-        for i, split in enumerate(splits):
-            split.metadata['id'] = f"{document_id}_{i}"
-        # Use the underlying Chroma store for adding since hybrid store wraps it
-        vector_store.dense_store.add_documents(documents=splits)
-        # Update BM25 index
-        vector_store._initialize_bm25()
+        vector_store.add_documents(documents=splits)
         
     finally:
         # Cleanup

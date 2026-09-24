@@ -3,8 +3,6 @@ import json
 from typing import Generator
 from app.db.vector_store import get_vector_store
 from app.core.config import settings
-from app.services.query_expansion import multi_query_retrieval
-from app.services.conversation_memory import conversation_memory
 
 def format_docs(docs):
     formatted = []
@@ -64,7 +62,7 @@ def stream_openrouter_api(messages: list) -> Generator[str, None, None]:
     except Exception as e:
         yield f"\n\n[System Error: LLM Connection Failed - {str(e)}]"
 
-def answer_query_stream(query: str, chat_history: list = None, filter_doc_id: str = None, session_id: str = None, conversation_context: str = "") -> Generator[str, None, None]:
+def answer_query_stream(query: str, chat_history: list = None, filter_doc_id: str = None) -> Generator[str, None, None]:
     """
     Yields JSON lines composed of citation arrays and subsequent LLM token chunks.
     """
@@ -132,11 +130,5 @@ def answer_query_stream(query: str, chat_history: list = None, filter_doc_id: st
     ]
 
     # 3. Stream generated tokens layer by layer back to the client
-    full_response = ""
     for chunk in stream_openrouter_api(messages):
-        full_response += chunk
         yield json.dumps({"type": "chunk", "content": chunk}) + "\n"
-    
-    # Add assistant response to conversation memory if session_id provided
-    if session_id and full_response:
-        conversation_memory.add_message(session_id, "assistant", full_response)
