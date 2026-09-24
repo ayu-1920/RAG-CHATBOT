@@ -7,9 +7,7 @@ The application is built with a decoupled architecture: a blazing-fast **FastAPI
 ## 🌟 Features
 
 * **PDF Ingestion & Processing**: Upload PDFs to break them down into semantically meaningful chunks with intelligent overlap ensuring no context is lost.
-* **Hybrid Search (Dense + Sparse)**: Combines semantic vector search with BM25 keyword matching for significantly improved retrieval accuracy and robustness.
-* **LLM-Powered Query Expansion**: Automatically generates alternative search queries to find relevant content that might not match the original query exactly.
-* **Conversation Memory**: Maintains context across multi-turn conversations for better follow-up question handling and continuity.
+* **Semantic Vector Search**: Uses ChromaDB with OpenAI embeddings for intelligent document retrieval based on meaning rather than exact keywords.
 * **Advanced Retrieval**: Uses MMR (Maximal Marginal Relevance) algorithm to diversify results and reduce redundancy.
 * **Streaming AI Responses**: Real-time token streaming using Server-Sent Events (SSE) so users aren't waiting for the entire LLM response to generate before reading.
 * **Precise Citations**: Automatically tracks document metadata, including file names and page numbers, appending them to generated answers for accuracy and fact-checking.
@@ -23,8 +21,6 @@ The application is built with a decoupled architecture: a blazing-fast **FastAPI
 * [LangChain](https://python.langchain.com/) - Orchestration framework for LLMs
 * [ChromaDB](https://www.trychroma.com/) - Persistent local vector database
 * [OpenRouter](https://openrouter.ai/) - LLM routing and completions (using `gpt-4o-mini` and `text-embedding-3-small`)
-* [Rank-BM25](https://github.com/dorianbrown/rank_bm25) - Fast BM25 implementation for sparse retrieval
-* [Sentence-Transformers](https://www.sbert.net/) - State-of-the-art sentence embeddings
 
 **Frontend**
 * [React 19](https://react.dev/) - Modern component-based UI
@@ -39,14 +35,11 @@ RAG-CHATBOT/
 ├── backend/                  # FastAPI Application
 │   ├── app/                  # Application source code
 │   │   ├── core/             # Configuration & environment setup
-│   │   ├── db/               # ChromaDB vector store & hybrid search
-│   │   │   ├── vector_store.py       # Main vector store interface
-│   │   │   └── hybrid_vector_store.py # Hybrid search implementation
+│   │   ├── db/               # ChromaDB vector store initialization
+│   │   │   └── vector_store.py       # Main vector store interface
 │   │   ├── services/         # Core logic: ingestion and RAG streaming
 │   │   │   ├── ingestion.py           # PDF processing and chunking
-│   │   │   ├── retrieval_qa.py        # RAG pipeline with query expansion
-│   │   │   ├── query_expansion.py    # LLM-powered query expansion
-│   │   │   └── conversation_memory.py # Multi-turn conversation tracking
+│   │   │   └── retrieval_qa.py        # RAG pipeline with MMR retrieval
 │   │   ├── api/              # API routes
 │   │   │   ├── routes_chat.py        # Chat endpoint with streaming
 │   │   │   └── routes_upload.py      # Document upload endpoint
@@ -67,36 +60,6 @@ RAG-CHATBOT/
 │
 └── render.yaml               # Infrastructure-as-code deployment config
 ```
-
----
-
-## 🧠 Advanced RAG Features
-
-This implementation includes modern RAG techniques that significantly improve retrieval accuracy and user experience:
-
-### Hybrid Search
-Combines dense (semantic) and sparse (keyword) search for better document discovery:
-- **Dense Search**: Uses OpenAI embeddings to find semantically similar content
-- **Sparse Search**: Uses BM25 algorithm for exact keyword matching
-- **Combined Results**: Merges both approaches for comprehensive retrieval
-
-### Query Expansion
-Automatically generates alternative search queries using LLM:
-- Original query: "How do I create a table in MySQL?"
-- Expanded queries: "MySQL CREATE TABLE syntax", "database table creation commands", "MySQL table structure definition"
-- Improves recall by finding content that might not match the exact original query
-
-### Conversation Memory
-Maintains context across multi-turn conversations:
-- Tracks recent user questions and assistant responses
-- Provides conversation context to the LLM for better follow-up handling
-- Automatic cleanup of old messages to prevent memory bloat
-
-### Multi-Query Retrieval
-Performs multiple parallel searches with different query formulations:
-- Searches with original query + expanded queries
-- Deduplicates results to avoid redundancy
-- Returns most relevant documents from all searches
 
 ---
 
