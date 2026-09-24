@@ -79,20 +79,18 @@ def answer_query_stream(query: str, chat_history: list = None, filter_doc_id: st
         yield json.dumps({"type": "chunk", "content": "Please upload a document first!"}) + "\n"
         return
 
-    # Advanced Retrieval: Multi-query expansion + Hybrid search for better accuracy
+    # Advanced Retrieval: MMR algorithm + Dynamic Metadata Filtering
+    search_kwargs = {
+        "k": min(5, total_docs), 
+        "fetch_k": min(20, total_docs), 
+        "lambda_mult": 0.7
+    }
+    
     if filter_doc_id:
-        # For filtered searches, use traditional MMR with metadata filtering
-        search_kwargs_dense = {
-            "k": min(5, total_docs),
-            "fetch_k": min(20, total_docs),
-            "lambda_mult": 0.7,
-            "filter": {"document_id": filter_doc_id}
-        }
-        retriever = vector_store.dense_store.as_retriever(search_type="mmr", search_kwargs=search_kwargs_dense)
-        docs = retriever.invoke(query)
-    else:
-        # Use multi-query expansion with hybrid search for unfiltered queries
-        docs = multi_query_retrieval(vector_store, query, k=min(5, total_docs))
+        search_kwargs["filter"] = {"document_id": filter_doc_id}
+        
+    retriever = vector_store.as_retriever(search_type="mmr", search_kwargs=search_kwargs)
+    docs = retriever.invoke(query)
     
     # 1. Immediately yield source citations to the UI so it populates BEFORE text generates
     sources = [
